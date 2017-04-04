@@ -1,0 +1,6 @@
+.settings
+.project
+.classpath
+target
+gwt-UnitCache
+src/main/webapp/CompanyDashboard
