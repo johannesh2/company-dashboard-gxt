@@ -18,6 +18,6 @@ public class CompanyDataServiceImpl extends RemoteServiceServlet implements Comp
 
 	@Override
 	public void saveCompanyData(CompanyDataDTO data) {
-		dao.persist(new CompanyData(data));
+		dao.save(new CompanyData(data));
 	}
 }

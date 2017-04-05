@@ -40,7 +40,7 @@ public class MyServletContextListener implements ServletContextListener {
 				entry.setGrowthPct(BigDecimal.valueOf(rand.nextDouble() * 100));
 				entry.setProductPct(BigDecimal.valueOf(rand.nextDouble() * 100));
 				entry.setMarketPct(BigDecimal.valueOf(rand.nextDouble() * 100));
-				dao.persist(entry);
+				dao.save(entry);
 			}
 		}
 	}
