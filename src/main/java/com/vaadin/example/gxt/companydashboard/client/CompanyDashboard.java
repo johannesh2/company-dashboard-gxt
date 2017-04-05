@@ -1,5 +1,6 @@
 package com.vaadin.example.gxt.companydashboard.client;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,14 +11,12 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.SimpleEventBus;
-import com.google.web.bindery.requestfactory.shared.Receiver;
-import com.google.web.bindery.requestfactory.shared.Request;
 import com.sencha.gxt.cell.core.client.NumberCell;
 import com.sencha.gxt.chart.client.chart.Chart;
 import com.sencha.gxt.chart.client.chart.Chart.Position;
@@ -47,7 +46,7 @@ import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.Viewport;
 import com.sencha.gxt.widget.core.client.event.SortChangeEvent;
 import com.sencha.gxt.widget.core.client.event.SortChangeEvent.SortChangeHandler;
-import com.sencha.gxt.widget.core.client.form.NumberPropertyEditor.DoublePropertyEditor;
+import com.sencha.gxt.widget.core.client.form.NumberPropertyEditor.BigDecimalPropertyEditor;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
@@ -55,13 +54,9 @@ import com.sencha.gxt.widget.core.client.grid.filters.GridFilters;
 import com.sencha.gxt.widget.core.client.grid.filters.StringFilter;
 import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent;
 import com.sencha.gxt.widget.core.client.selection.SelectionChangedEvent.SelectionChangedHandler;
-import com.vaadin.example.gxt.companydashboard.shared.CompanyDataProxy;
-import com.vaadin.example.gxt.companydashboard.shared.CompanyRequestFactory;
-import com.vaadin.example.gxt.companydashboard.shared.CompanyRequestFactory.CompanyDataRequest;
+import com.vaadin.example.gxt.companydashboard.shared.CompanyDataDTO;
 
 public class CompanyDashboard implements IsWidget, EntryPoint {
-
-	private CompanyRequestFactory requestFactory;
 
 	private final static String[] companies = { "3m Co", "Alcoa Inc", "Altria Group Inc", "American Express Company",
 			"American International Group, Inc.", "AT&T Inc", "Boeing Co.", "Caterpillar Inc.", "Citigroup, Inc.",
@@ -78,19 +73,19 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 	private static final DashboardDataProperties dataProperties = GWT
 			.<DashboardDataProperties>create(DashboardDataProperties.class);
 
-	private final ListStore<Data> store = new ListStore<Data>(dataProperties.nameKey());
+	private final ListStore<CompanyDataDTO> store = new ListStore<CompanyDataDTO>(dataProperties.nameKey());
 
-	private Chart<Data> barChart;
-	private Grid<Data> grid;
+	private Chart<CompanyDataDTO> barChart;
+	private Grid<CompanyDataDTO> grid;
 	private ContentPanel panel;
 	private CompanyDetailsEditor companyDetailsEditor;
-	private Data lastSelected;
+	private CompanyDataDTO lastSelected;
+
+	private CompanyDataServiceAsync service = (CompanyDataServiceAsync) GWT.create(CompanyDataService.class);
 
 	@Override
 	public void onModuleLoad() {
 		final EventBus eventBus = new SimpleEventBus();
-		requestFactory = GWT.create(CompanyRequestFactory.class);
-		requestFactory.initialize(eventBus);
 		final Viewport viewport = new Viewport();
 		RootPanel.get().add(viewport);
 		viewport.add(this);
@@ -99,13 +94,23 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 	@Override
 	public Widget asWidget() {
 		if (panel == null) {
-			for (int i = 0; i < companies.length; i++) {
-				store.add(new Data(companies[i], Random.nextDouble() * 100, Random.nextDouble() * 100,
-						Random.nextDouble() * 100, Random.nextDouble() * 100, Random.nextDouble() * 100, 0, 0, 0, 0));
-			}
-			store.addStoreFilterHandler(new StoreFilterHandler<Data>() {
+
+			service.getAllCompanyData(new AsyncCallback<List<CompanyDataDTO>>() {
+
 				@Override
-				public void onFilter(StoreFilterEvent<Data> event) {
+				public void onSuccess(List<CompanyDataDTO> result) {
+					store.addAll(result);
+				}
+
+				@Override
+				public void onFailure(Throwable caught) {
+
+				}
+			});
+
+			store.addStoreFilterHandler(new StoreFilterHandler<CompanyDataDTO>() {
+				@Override
+				public void onFilter(StoreFilterEvent<CompanyDataDTO> event) {
 					barChart.redrawChart();
 					grid.getSelectionModel().select(0, false);
 				}
@@ -115,9 +120,9 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 			initializeBarChart();
 
 			companyDetailsEditor = new CompanyDetailsEditor();
-			companyDetailsEditor.addValueChangeHandler(new ValueChangeHandler<Data>() {
+			companyDetailsEditor.addValueChangeHandler(new ValueChangeHandler<CompanyDataDTO>() {
 				@Override
-				public void onValueChange(ValueChangeEvent<Data> event) {
+				public void onValueChange(ValueChangeEvent<CompanyDataDTO> event) {
 					store.update(event.getValue());
 					barChart.redrawChart();
 					doHighlightSelected();
@@ -133,9 +138,9 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 				}
 			});
 
-			grid.getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<Data>() {
+			grid.getSelectionModel().addSelectionChangedHandler(new SelectionChangedHandler<CompanyDataDTO>() {
 				@Override
-				public void onSelectionChanged(SelectionChangedEvent<Data> event) {
+				public void onSelectionChanged(SelectionChangedEvent<CompanyDataDTO> event) {
 					if (event.getSelection().isEmpty()) {
 						// disable ability to deselect
 						grid.getSelectionModel().select(lastSelected, false);
@@ -153,35 +158,22 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 					doHighlightSelected();
 					companyDetailsEditor.setValue(lastSelected);
 					scrollGrid();
-					
-					CompanyDataRequest request = requestFactory.companyDataRequest();
-					CompanyDataProxy newCompanyData = request.create(CompanyDataProxy.class);
-					newCompanyData.setName("ACME Inc");
-					Request<Void> createReq = request.persist(newCompanyData);
-					createReq.fire(new Receiver<Void>() {
-
-						@Override
-						public void onSuccess(Void response) {
-
-						}
-
-					});
 				}
 			});
 
-			StringFilter<Data> nameFilter = new StringFilter<Data>(dataProperties.name());
+			StringFilter<CompanyDataDTO> nameFilter = new StringFilter<CompanyDataDTO>(dataProperties.name());
 			FormattedNumericFilter priceFilter = new FormattedNumericFilter(dataProperties.price(),
-					new DoublePropertyEditor(), "0.00");
+					new BigDecimalPropertyEditor(), "0.00");
 			FormattedNumericFilter revenueFilter = new FormattedNumericFilter(dataProperties.revenue(),
-					new DoublePropertyEditor(), "0.00");
+					new BigDecimalPropertyEditor(), "0.00");
 			FormattedNumericFilter growthFilter = new FormattedNumericFilter(dataProperties.growth(),
-					new DoublePropertyEditor(), "0.00");
+					new BigDecimalPropertyEditor(), "0.00");
 			FormattedNumericFilter productFilter = new FormattedNumericFilter(dataProperties.product(),
-					new DoublePropertyEditor(), "0.00");
+					new BigDecimalPropertyEditor(), "0.00");
 			FormattedNumericFilter marketFilter = new FormattedNumericFilter(dataProperties.market(),
-					new DoublePropertyEditor(), "0.00");
+					new BigDecimalPropertyEditor(), "0.00");
 
-			GridFilters<Data> filters = new GridFilters<Data>();
+			GridFilters<CompanyDataDTO> filters = new GridFilters<CompanyDataDTO>();
 			filters.initPlugin(grid);
 			filters.setLocal(true);
 			filters.addFilter(nameFilter);
@@ -232,7 +224,7 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 		TextSprite rotation = new TextSprite();
 		rotation.setRotation(270);
 
-		CategoryAxis<Data, String> catAxis = new CategoryAxis<Data, String>();
+		CategoryAxis<CompanyDataDTO, String> catAxis = new CategoryAxis<CompanyDataDTO, String>();
 		catAxis.setPosition(Position.BOTTOM);
 		catAxis.setField(dataProperties.name());
 		catAxis.setLabelConfig(rotation);
@@ -251,10 +243,10 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 		rotation.setTextAnchor(TextAnchor.END);
 		rotation.setTextBaseline(TextBaseline.MIDDLE);
 
-		SeriesLabelConfig<Data> barLabelConfig = new SeriesLabelConfig<Data>();
+		SeriesLabelConfig<CompanyDataDTO> barLabelConfig = new SeriesLabelConfig<CompanyDataDTO>();
 		barLabelConfig.setSpriteConfig(rotation);
 
-		final BarSeries<Data> bar = new BarSeries<Data>();
+		final BarSeries<CompanyDataDTO> bar = new BarSeries<CompanyDataDTO>();
 		bar.setYAxisPosition(Position.LEFT);
 		bar.addYField(dataProperties.price());
 		bar.setLabelConfig(barLabelConfig);
@@ -284,14 +276,14 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 			}
 		});
 
-		bar.addSeriesSelectionHandler(new SeriesSelectionHandler<Data>() {
+		bar.addSeriesSelectionHandler(new SeriesSelectionHandler<CompanyDataDTO>() {
 			@Override
-			public void onSeriesSelection(SeriesSelectionEvent<Data> event) {
+			public void onSeriesSelection(SeriesSelectionEvent<CompanyDataDTO> event) {
 				grid.getSelectionModel().select(event.getIndex(), false);
 			}
 		});
 
-		barChart = new Chart<Data>();
+		barChart = new Chart<CompanyDataDTO>();
 		barChart.setStore(store);
 		barChart.setShadowChart(false);
 		barChart.setAnimated(true);
@@ -300,26 +292,32 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 	}
 
 	private void initializeGrid() {
-		ColumnConfig<Data, String> nameColumnConfig = new ColumnConfig<Data, String>(dataProperties.name(), 120,
+		ColumnConfig<CompanyDataDTO, String> nameColumnConfig = new ColumnConfig<CompanyDataDTO, String>(
+				dataProperties.name(), 120,
 				"Name");
-		ColumnConfig<Data, Double> priceColumnConfig = new ColumnConfig<Data, Double>(dataProperties.price(), 75,
+		ColumnConfig<CompanyDataDTO, BigDecimal> priceColumnConfig = new ColumnConfig<CompanyDataDTO, BigDecimal>(
+				dataProperties.price(), 75,
 				"Price $");
-		ColumnConfig<Data, Double> revenueColumnConfig = new ColumnConfig<Data, Double>(dataProperties.revenue(), 75,
+		ColumnConfig<CompanyDataDTO, BigDecimal> revenueColumnConfig = new ColumnConfig<CompanyDataDTO, BigDecimal>(
+				dataProperties.revenue(), 75,
 				"Revenue %");
-		ColumnConfig<Data, Double> growthColumnConfig = new ColumnConfig<Data, Double>(dataProperties.growth(), 75,
+		ColumnConfig<CompanyDataDTO, BigDecimal> growthColumnConfig = new ColumnConfig<CompanyDataDTO, BigDecimal>(
+				dataProperties.growth(), 75,
 				"Growth %");
-		ColumnConfig<Data, Double> productColumnConfig = new ColumnConfig<Data, Double>(dataProperties.product(), 75,
+		ColumnConfig<CompanyDataDTO, BigDecimal> productColumnConfig = new ColumnConfig<CompanyDataDTO, BigDecimal>(
+				dataProperties.product(), 75,
 				"Product %");
-		ColumnConfig<Data, Double> marketColumnConfig = new ColumnConfig<Data, Double>(dataProperties.market(), 75,
+		ColumnConfig<CompanyDataDTO, BigDecimal> marketColumnConfig = new ColumnConfig<CompanyDataDTO, BigDecimal>(
+				dataProperties.market(), 75,
 				"Market %");
 
-		priceColumnConfig.setCell(new NumberCell<Double>(NumberFormat.getFormat("0.00")));
-		revenueColumnConfig.setCell(new NumberCell<Double>(NumberFormat.getFormat("0.00")));
-		growthColumnConfig.setCell(new NumberCell<Double>(NumberFormat.getFormat("0.00")));
-		productColumnConfig.setCell(new NumberCell<Double>(NumberFormat.getFormat("0.00")));
-		marketColumnConfig.setCell(new NumberCell<Double>(NumberFormat.getFormat("0.00")));
+		priceColumnConfig.setCell(new NumberCell<BigDecimal>(NumberFormat.getFormat("0.00")));
+		revenueColumnConfig.setCell(new NumberCell<BigDecimal>(NumberFormat.getFormat("0.00")));
+		growthColumnConfig.setCell(new NumberCell<BigDecimal>(NumberFormat.getFormat("0.00")));
+		productColumnConfig.setCell(new NumberCell<BigDecimal>(NumberFormat.getFormat("0.00")));
+		marketColumnConfig.setCell(new NumberCell<BigDecimal>(NumberFormat.getFormat("0.00")));
 
-		List<ColumnConfig<Data, ?>> columns = new ArrayList<ColumnConfig<Data, ?>>();
+		List<ColumnConfig<CompanyDataDTO, ?>> columns = new ArrayList<ColumnConfig<CompanyDataDTO, ?>>();
 		columns.add(nameColumnConfig);
 		columns.add(priceColumnConfig);
 		columns.add(revenueColumnConfig);
@@ -327,14 +325,14 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 		columns.add(productColumnConfig);
 		columns.add(marketColumnConfig);
 
-		grid = new Grid<Data>(store, new ColumnModel<Data>(columns));
+		grid = new Grid<CompanyDataDTO>(store, new ColumnModel<CompanyDataDTO>(columns));
 		grid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		grid.getView().setAutoExpandColumn(nameColumnConfig);
 	}
 
 	private void scrollGrid() {
 		if (grid.isAttached() && grid.isVisible()) {
-			Data selectedItem = grid.getSelectionModel().getSelectedItem();
+			CompanyDataDTO selectedItem = grid.getSelectionModel().getSelectedItem();
 			grid.getView().getRow(selectedItem).scrollIntoView();
 		}
 	}

@@ -37,23 +37,26 @@
  */
 package com.vaadin.example.gxt.companydashboard.client;
 
+import java.math.BigDecimal;
+
 import com.google.gwt.i18n.client.NumberFormat;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.widget.core.client.form.NumberPropertyEditor;
 import com.sencha.gxt.widget.core.client.grid.filters.NumericFilter;
+import com.vaadin.example.gxt.companydashboard.shared.CompanyDataDTO;
 
-public class FormattedNumericFilter extends NumericFilter<Data, Double> {
+public class FormattedNumericFilter extends NumericFilter<CompanyDataDTO, BigDecimal> {
 
-  NumberFormat formatter;
+	NumberFormat formatter;
 
-  public FormattedNumericFilter(ValueProvider<? super Data, Double> valueProvider,
-      NumberPropertyEditor<Double> propertyEditor, String format) {
-    super(valueProvider, propertyEditor);
-    formatter = NumberFormat.getFormat(format);
-  }
+	public FormattedNumericFilter(ValueProvider<? super CompanyDataDTO, BigDecimal> valueProvider,
+			NumberPropertyEditor<BigDecimal> propertyEditor, String format) {
+		super(valueProvider, propertyEditor);
+		formatter = NumberFormat.getFormat(format);
+	}
 
-  protected boolean equals(Double a, Double b) {
-    return formatter.format(a).equals(formatter.format(b));
-  }
+	protected boolean equals(BigDecimal a, BigDecimal b) {
+		return formatter.format(a).equals(formatter.format(b));
+	}
 
 }

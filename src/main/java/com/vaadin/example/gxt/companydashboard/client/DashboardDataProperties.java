@@ -37,32 +37,35 @@
  */
 package com.vaadin.example.gxt.companydashboard.client;
 
+import java.math.BigDecimal;
+
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.PropertyAccess;
+import com.vaadin.example.gxt.companydashboard.shared.CompanyDataDTO;
 
 /**
  *
  */
-public interface DashboardDataProperties extends PropertyAccess<Data> {
-  @Path("data1")
-  ValueProvider<Data, Double> price();
+public interface DashboardDataProperties extends PropertyAccess<CompanyDataDTO> {
+	@Path("price")
+	ValueProvider<CompanyDataDTO, BigDecimal> price();
 
-  @Path("data2")
-  ValueProvider<Data, Double> revenue();
+	@Path("revenuePct")
+	ValueProvider<CompanyDataDTO, BigDecimal> revenue();
 
-  @Path("data3")
-  ValueProvider<Data, Double> growth();
+	@Path("growthPct")
+	ValueProvider<CompanyDataDTO, BigDecimal> growth();
 
-  @Path("data4")
-  ValueProvider<Data, Double> product();
+	@Path("productPct")
+	ValueProvider<CompanyDataDTO, BigDecimal> product();
 
-  @Path("data5")
-  ValueProvider<Data, Double> market();
+	@Path("marketPct")
+	ValueProvider<CompanyDataDTO, BigDecimal> market();
 
-  ValueProvider<Data, String> name();
+	ValueProvider<CompanyDataDTO, String> name();
 
-  @Path("id")
-  ModelKeyProvider<Data> nameKey();
+	@Path("id")
+	ModelKeyProvider<CompanyDataDTO> nameKey();
 }

@@ -37,28 +37,30 @@
  */
 package com.vaadin.example.gxt.companydashboard.client;
 
+import java.math.BigDecimal;
+
 public class RadarData {
-  private String name;
-  private double data;
+	private String name;
+	private BigDecimal data;
 
-  public RadarData(String name, double data) {
-    this.name = name;
-    this.data = data;
-  }
+	public RadarData(String name, BigDecimal data) {
+		this.name = name;
+		this.data = data;
+	}
 
-  public double getData() {
-    return data;
-  }
+	public BigDecimal getData() {
+		return data;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public void setData(double data) {
-    this.data = data;
-  }
+	public void setData(BigDecimal data) {
+		this.data = data;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
 }

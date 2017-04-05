@@ -37,6 +37,8 @@
  */
 package com.vaadin.example.gxt.companydashboard.client;
 
+import java.math.BigDecimal;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -65,178 +67,181 @@ import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VBoxLayoutContainer.VBoxLayoutAlign;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
-import com.sencha.gxt.widget.core.client.form.DoubleSpinnerField;
+import com.sencha.gxt.widget.core.client.form.BigDecimalSpinnerField;
 import com.sencha.gxt.widget.core.client.form.Field;
 import com.sencha.gxt.widget.core.client.form.FieldLabel;
 import com.sencha.gxt.widget.core.client.form.TextField;
+import com.vaadin.example.gxt.companydashboard.shared.CompanyDataDTO;
 
-public class CompanyDetailsEditor implements Editor<Data>, IsWidget, HasValueChangeHandlers<Data>, TakesValue<Data> {
+public class CompanyDetailsEditor implements Editor<CompanyDataDTO>, IsWidget, HasValueChangeHandlers<CompanyDataDTO>,
+		TakesValue<CompanyDataDTO> {
 
-  interface Driver extends SimpleBeanEditorDriver<Data, CompanyDetailsEditor> {
-  }
-  
-  private final static String[] radarLabels = {"Price", "Revenue %", "Growth %", "Product %", "Market %"};
+	interface Driver extends SimpleBeanEditorDriver<CompanyDataDTO, CompanyDetailsEditor> {
+	}
 
-  TextField name = new TextField();
-  @Path("data1")
-  DoubleSpinnerField price = new DoubleSpinnerField();
-  @Path("data2")
-  DoubleSpinnerField revenue = new DoubleSpinnerField();
-  @Path("data3")
-  DoubleSpinnerField growth = new DoubleSpinnerField();
-  @Path("data4")
-  DoubleSpinnerField product = new DoubleSpinnerField();
-  @Path("data5")
-  DoubleSpinnerField market = new DoubleSpinnerField();
+	private final static String[] radarLabels = { "Price", "Revenue %", "Growth %", "Product %", "Market %" };
 
-  private final HandlerManager handlerManager = new HandlerManager(this);
-  private final Driver driver = GWT.<Driver>create(Driver.class);
-  private final RadarDataProperties radarProperties = GWT.<RadarDataProperties>create(RadarDataProperties.class);
-  private final ListStore<RadarData> radarStore = new ListStore<RadarData>(radarProperties.nameKey());
-  
-  private Field<?>[] fields = new Field<?>[]{name, price, revenue, growth, product, market};
-  private Chart<RadarData> radarChart;
-  private ContentPanel panel;
+	TextField name = new TextField();
 
-  public CompanyDetailsEditor() {
-    radarChart = createRadar();
+	@Path("price")
+	BigDecimalSpinnerField price = new BigDecimalSpinnerField();
+	@Path("revenuePct")
+	BigDecimalSpinnerField revenue = new BigDecimalSpinnerField();
+	@Path("growthPct")
+	BigDecimalSpinnerField growth = new BigDecimalSpinnerField();
+	@Path("productPct")
+	BigDecimalSpinnerField product = new BigDecimalSpinnerField();
+	@Path("marketPct")
+	BigDecimalSpinnerField market = new BigDecimalSpinnerField();
 
-    name.setReadOnly(true);
+	private final HandlerManager handlerManager = new HandlerManager(this);
+	private final Driver driver = GWT.<Driver>create(Driver.class);
+	private final RadarDataProperties radarProperties = GWT.<RadarDataProperties>create(RadarDataProperties.class);
+	private final ListStore<RadarData> radarStore = new ListStore<RadarData>(radarProperties.nameKey());
 
-    initializeSpinner(price);
-    initializeSpinner(revenue);
-    initializeSpinner(growth);
-    initializeSpinner(product);
-    initializeSpinner(market);
+	private Field<?>[] fields = new Field<?>[] { name, price, revenue, growth, product, market };
+	private Chart<RadarData> radarChart;
+	private ContentPanel panel;
 
-    VBoxLayoutContainer container = new VBoxLayoutContainer();
-    container.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
-    container.add(radarChart);
-    container.add(new FieldLabel(name, "Name"));
-    container.add(new FieldLabel(price, "Price $"));
-    container.add(new FieldLabel(revenue, "Revenue %"));
-    container.add(new FieldLabel(growth, "Growth %"));
-    container.add(new FieldLabel(product, "Product %"));
-    container.add(new FieldLabel(market, "Market %"));
+	public CompanyDetailsEditor() {
+		radarChart = createRadar();
 
-    panel = new ContentPanel();
-    panel.setHeading("Company Details");
-    panel.addStyleName("white-bg");
-    panel.add(container, new VerticalLayoutData(1, 1, new Margins(20, 0, 0, 0)));
+		name.setReadOnly(true);
 
-    driver.initialize(this);
-  }
+		initializeSpinner(price);
+		initializeSpinner(revenue);
+		initializeSpinner(growth);
+		initializeSpinner(product);
+		initializeSpinner(market);
 
+		VBoxLayoutContainer container = new VBoxLayoutContainer();
+		container.setVBoxLayoutAlign(VBoxLayoutAlign.CENTER);
+		container.add(radarChart);
+		container.add(new FieldLabel(name, "Name"));
+		container.add(new FieldLabel(price, "Price $"));
+		container.add(new FieldLabel(revenue, "Revenue %"));
+		container.add(new FieldLabel(growth, "Growth %"));
+		container.add(new FieldLabel(product, "Product %"));
+		container.add(new FieldLabel(market, "Market %"));
 
-  @Override
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<Data> handler) {
-    return handlerManager.addHandler(ValueChangeEvent.getType(), handler);
-  }
+		panel = new ContentPanel();
+		panel.setHeading("Company Details");
+		panel.addStyleName("white-bg");
+		panel.add(container, new VerticalLayoutData(1, 1, new Margins(20, 0, 0, 0)));
 
-  @Override
-  public Widget asWidget() {
-    return panel;
-  }
+		driver.initialize(this);
+	}
 
-  @Override
-  public void fireEvent(GwtEvent<?> event) {
-    handlerManager.fireEvent(event);
-  }
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<CompanyDataDTO> handler) {
+		return handlerManager.addHandler(ValueChangeEvent.getType(), handler);
+	}
 
-  @Override
-  public Data getValue() {
-    return driver.flush();
-  }
+	@Override
+	public Widget asWidget() {
+		return panel;
+	}
 
-  @Override
-  public void setValue(final Data value) {
-    persistFields();
+	@Override
+	public void fireEvent(GwtEvent<?> event) {
+		handlerManager.fireEvent(event);
+	}
 
-    // If one of the spinners has focus with changes,
-    // it needs to persist before editing new bean
-    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        resetFields();
-        driver.edit(value);
-        updateRadar(value);
-      }
-    });
-  }
+	@Override
+	public CompanyDataDTO getValue() {
+		return driver.flush();
+	}
 
-  private Chart<RadarData> createRadar() {
-    RadialAxis<RadarData, String> axis = new RadialAxis<RadarData, String>();
-    axis.setCategoryField(radarProperties.name());
-    axis.setSteps(5);
-    
-    Sprite marker = Primitives.circle(0, 0, 4);
-    marker.setFill(new RGB(69, 109, 159));
+	@Override
+	public void setValue(final CompanyDataDTO value) {
+		persistFields();
 
-    RadarSeries<RadarData> radar = new RadarSeries<RadarData>();
-    radar.setYField(radarProperties.data());
-    radar.setFill(new RGB(194, 214, 240));
-    radar.setStrokeWidth(0.5);
-    radar.setShowMarkers(true);
-    radar.setMarkerConfig(marker);
-    radar.setLineRenderer(new SeriesRenderer<RadarData>() {
-      @Override
-      public void spriteRenderer(Sprite sprite, int index, ListStore<RadarData> store) {
-        sprite.setOpacity(0.5);
-      }
-    });
-    
-    Chart<RadarData> chart = new Chart<RadarData>(320, 320);
-    chart.setStore(radarStore);
-    chart.setAnimated(true);
-    chart.setDefaultInsets(50);
-    chart.addAxis(axis);
-    chart.addSeries(radar);
+		// If one of the spinners has focus with changes,
+		// it needs to persist before editing new bean
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				resetFields();
+				driver.edit(value);
+				updateRadar(value);
+			}
+		});
+	}
 
-    return chart;
-  }
+	private Chart<RadarData> createRadar() {
+		RadialAxis<RadarData, String> axis = new RadialAxis<RadarData, String>();
+		axis.setCategoryField(radarProperties.name());
+		axis.setSteps(5);
 
-  private void initializeSpinner(final DoubleSpinnerField spinner) {
-    spinner.setIncrement(1d);
-    spinner.setMinValue(0d);
-    spinner.setMaxValue(100d);
-    spinner.setAllowBlank(false);
-    spinner.getPropertyEditor().setFormat(NumberFormat.getFormat("0.00"));
-    spinner.addValueChangeHandler(new ValueChangeHandler<Double>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<Double> event) {
-        if (spinner.isValid()) {
-          Data value = driver.flush();
-          updateRadar(value);
-          ValueChangeEvent.fire(CompanyDetailsEditor.this, value);
-        }
-      }
-    });
-  }
+		Sprite marker = Primitives.circle(0, 0, 4);
+		marker.setFill(new RGB(69, 109, 159));
 
-  private void resetFields() {
-    for (Field field : fields) {
-      field.clearInvalid();
-    }
-  }
+		RadarSeries<RadarData> radar = new RadarSeries<RadarData>();
+		radar.setYField(radarProperties.data());
+		radar.setFill(new RGB(194, 214, 240));
+		radar.setStrokeWidth(0.5);
+		radar.setShowMarkers(true);
+		radar.setMarkerConfig(marker);
+		radar.setLineRenderer(new SeriesRenderer<RadarData>() {
+			@Override
+			public void spriteRenderer(Sprite sprite, int index, ListStore<RadarData> store) {
+				sprite.setOpacity(0.5);
+			}
+		});
 
-  private void persistFields() {
-    for (Field field : fields) {
-      if (field.isEditing()) {
-        field.finishEditing();
-      }
-    }
-  }
+		Chart<RadarData> chart = new Chart<RadarData>(320, 320);
+		chart.setStore(radarStore);
+		chart.setAnimated(true);
+		chart.setDefaultInsets(50);
+		chart.addAxis(axis);
+		chart.addSeries(radar);
 
-  private void updateRadar(Data data) {
-    radarStore.clear();
+		return chart;
+	}
 
-    radarStore.add(new RadarData(radarLabels[0], data.getData1()));
-    radarStore.add(new RadarData(radarLabels[1], data.getData2()));
-    radarStore.add(new RadarData(radarLabels[2], data.getData3()));
-    radarStore.add(new RadarData(radarLabels[3], data.getData4()));
-    radarStore.add(new RadarData(radarLabels[4], data.getData5()));
+	private void initializeSpinner(final BigDecimalSpinnerField spinner) {
+		spinner.setIncrement(BigDecimal.ONE);
+		spinner.setMinValue(0d);
+		spinner.setMaxValue(BigDecimal.valueOf(100d));
+		spinner.setAllowBlank(false);
+		spinner.getPropertyEditor().setFormat(NumberFormat.getFormat("0.00"));
+		spinner.addValueChangeHandler(new ValueChangeHandler<BigDecimal>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<BigDecimal> event) {
+				if (spinner.isValid()) {
+					CompanyDataDTO value = driver.flush();
+					updateRadar(value);
+					ValueChangeEvent.fire(CompanyDetailsEditor.this, value);
+				}
+			}
+		});
+	}
 
-    radarChart.redrawChart();
-  }
+	private void resetFields() {
+		for (Field field : fields) {
+			field.clearInvalid();
+		}
+	}
+
+	private void persistFields() {
+		for (Field field : fields) {
+			if (field.isEditing()) {
+				field.finishEditing();
+			}
+		}
+
+	}
+
+	private void updateRadar(CompanyDataDTO data) {
+		radarStore.clear();
+
+		radarStore.add(new RadarData(radarLabels[0], data.getPrice()));
+		radarStore.add(new RadarData(radarLabels[1], data.getRevenuePct()));
+		radarStore.add(new RadarData(radarLabels[2], data.getGrowthPct()));
+		radarStore.add(new RadarData(radarLabels[3], data.getProductPct()));
+		radarStore.add(new RadarData(radarLabels[4], data.getMarketPct()));
+
+		radarChart.redrawChart();
+	}
 
 }

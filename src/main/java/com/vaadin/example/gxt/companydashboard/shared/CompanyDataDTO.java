@@ -1,13 +1,13 @@
-package com.vaadin.example.gxt.companydashboard.server;
+package com.vaadin.example.gxt.companydashboard.shared;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-import javax.persistence.Entity;
+public class CompanyDataDTO implements Serializable {
 
-import com.vaadin.example.gxt.companydashboard.shared.CompanyDataDTO;
+	private Long id;
 
-@Entity(name = "CompanyData")
-public class CompanyData extends AbstractEntity {
+	private Integer version;
 
 	private String name;
 
@@ -21,25 +21,41 @@ public class CompanyData extends AbstractEntity {
 
 	private BigDecimal marketPct;
 
-	public CompanyData() {
+	public CompanyDataDTO(Long id, Integer version, String name, BigDecimal price, BigDecimal revenuePct,
+			BigDecimal growthPct,
+			BigDecimal productPct, BigDecimal marketPct) {
+		this.id = id;
+		this.version = version;
+		this.name = name;
+		this.price = price;
+		this.revenuePct = revenuePct;
+		this.growthPct = growthPct;
+		this.productPct = productPct;
+		this.marketPct = marketPct;
+	}
+
+	public CompanyDataDTO(Long id) {
+		this.id = id;
+	}
+
+	public CompanyDataDTO() {
 
 	}
 
-	public CompanyData(CompanyDataDTO dto) {
-		setId(dto.getId());
-		setVersion(dto.getVersion());
-		name = dto.getName();
-		price = dto.getPrice();
-		revenuePct = dto.getRevenuePct();
-		growthPct = dto.getGrowthPct();
-		productPct = dto.getProductPct();
-		marketPct = dto.getMarketPct();
+	public Long getId() {
+		return id;
 	}
 
-	public static CompanyDataDTO mapToDTO(CompanyData data) {
-		return new CompanyDataDTO(data.getId(), data.getVersion(), data.name, data.price, data.revenuePct,
-				data.growthPct,
-				data.productPct, data.marketPct);
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Integer getVersion() {
+		return version;
+	}
+
+	public void setVersion(Integer version) {
+		this.version = version;
 	}
 
 	public String getName() {
@@ -89,4 +105,5 @@ public class CompanyData extends AbstractEntity {
 	public void setMarketPct(BigDecimal marketPct) {
 		this.marketPct = marketPct;
 	}
+
 }
