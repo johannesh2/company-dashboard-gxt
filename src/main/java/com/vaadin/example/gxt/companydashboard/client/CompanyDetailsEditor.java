@@ -229,7 +229,6 @@ public class CompanyDetailsEditor implements Editor<CompanyDataDTO>, IsWidget, H
 				field.finishEditing();
 			}
 		}
-
 	}
 
 	private void updateRadar(CompanyDataDTO data) {

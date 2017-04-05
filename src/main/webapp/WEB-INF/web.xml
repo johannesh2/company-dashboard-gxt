@@ -16,12 +16,6 @@
       <url-pattern>/CompanyDashboard/companyData</url-pattern>
     </servlet-mapping>
     
-    <listener>
-        <listener-class>
-            com.vaadin.example.gxt.companydashboard.server.MyServletContextListener
-        </listener-class>
-   </listener>
-
     <!-- Default page to serve -->
     <welcome-file-list>
         <welcome-file>CompanyDashboard.html</welcome-file>

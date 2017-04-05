@@ -100,6 +100,8 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 				@Override
 				public void onSuccess(List<CompanyDataDTO> result) {
 					store.addAll(result);
+					barChart.redrawChart();
+					grid.getSelectionModel().select(0, false);
 				}
 
 				@Override
@@ -126,6 +128,19 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 					store.update(event.getValue());
 					barChart.redrawChart();
 					doHighlightSelected();
+					service.saveCompanyData(event.getValue(), new AsyncCallback<CompanyDataDTO>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							// TODO Auto-generated method stub
+						}
+
+						@Override
+						public void onSuccess(CompanyDataDTO result) {
+							store.update(result);
+						}
+					});
+
 				}
 			});
 

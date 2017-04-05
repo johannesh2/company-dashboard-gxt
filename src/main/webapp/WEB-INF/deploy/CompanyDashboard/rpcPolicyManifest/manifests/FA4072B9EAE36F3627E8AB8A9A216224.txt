@@ -1,2 +1,0 @@
-serviceClass: com.vaadin.example.gxt.companydashboard.client.CompanyDataService
-path: 27E8393AB43C6351138D8599AB6778E9.gwt.rpc

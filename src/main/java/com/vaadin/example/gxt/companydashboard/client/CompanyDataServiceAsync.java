@@ -9,6 +9,6 @@ public interface CompanyDataServiceAsync {
 
 	void getAllCompanyData(AsyncCallback<List<CompanyDataDTO>> callback);
 
-	void saveCompanyData(CompanyDataDTO data, AsyncCallback<Void> callback);
+	void saveCompanyData(CompanyDataDTO data, AsyncCallback<CompanyDataDTO> callback);
 
 }

@@ -26,8 +26,8 @@ public class CompanyData extends AbstractEntity {
 	}
 
 	public CompanyData(CompanyDataDTO dto) {
-		setId(dto.getId());
-		setVersion(dto.getVersion());
+		id = dto.getId();
+		version = dto.getVersion();
 		name = dto.getName();
 		price = dto.getPrice();
 		revenuePct = dto.getRevenuePct();

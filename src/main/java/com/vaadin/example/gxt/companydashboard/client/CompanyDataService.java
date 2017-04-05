@@ -10,5 +10,5 @@ import com.vaadin.example.gxt.companydashboard.shared.CompanyDataDTO;
 public interface CompanyDataService extends RemoteService {
 	List<CompanyDataDTO> getAllCompanyData();
 
-	void saveCompanyData(CompanyDataDTO data);
+	CompanyDataDTO saveCompanyData(CompanyDataDTO data);
 }

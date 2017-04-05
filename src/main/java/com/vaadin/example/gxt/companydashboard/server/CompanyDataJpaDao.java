@@ -8,6 +8,10 @@ public class CompanyDataJpaDao extends JpaDao<CompanyData, Long> implements Comp
 
 	public CompanyDataJpaDao() {
 		super(CompanyData.class);
+
+		if (findAll().isEmpty()) {
+			TestData.createTestCompanyData(this);
+		}
 	}
 
 	@Override
