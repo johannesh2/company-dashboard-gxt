@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.vaadin.example.gxt</groupId>
-    <artifactId>company-dashboard</artifactId>
+    <artifactId>company-dashboard-gxt</artifactId>
     <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>company-dashboard</name>
+    <name>company-dashboard-gxt</name>
     <description>Very basic GXT maven setup</description>
 
     <properties>
@@ -17,7 +17,7 @@
         <!-- GWT -->
         <gwt.version>2.8.0</gwt.version>
         <gwt.maven.version>2.8.0</gwt.maven.version>
-        <gwt.style>PRETTY</gwt.style>
+        <gwt.style>OBF</gwt.style>
 
         <!-- Maven -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

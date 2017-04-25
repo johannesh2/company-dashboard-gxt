@@ -15,8 +15,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.SimpleEventBus;
 import com.sencha.gxt.cell.core.client.NumberCell;
 import com.sencha.gxt.chart.client.chart.Chart;
 import com.sencha.gxt.chart.client.chart.Chart.Position;
@@ -85,7 +83,6 @@ public class CompanyDashboard implements IsWidget, EntryPoint {
 
 	@Override
 	public void onModuleLoad() {
-		final EventBus eventBus = new SimpleEventBus();
 		final Viewport viewport = new Viewport();
 		RootPanel.get().add(viewport);
 		viewport.add(this);
